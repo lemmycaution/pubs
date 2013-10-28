@@ -56,6 +56,7 @@ module Pubs
 
       def on_close(env)
         @env = env
+        env['keepalive'].try(:cancel)
         return if env['subscription'].nil?
         env.logger.info("WS CLOSED #{env['HTTP_SEC_WEBSOCKET_KEY']}")
         channel.unsubscribe(env['subscription'])
@@ -98,20 +99,19 @@ module Pubs
 
 
       # first part creating organisation scope for channels
-      # then path based lazy exchanges
-      def channel
-        exchange = env["REQUEST_PATH"].gsub(/\/ws/,"").underscore
-        Pubs.channels["#{current_user.organisation_id}_#{exchange}"]
+      # then path based lazy channels
+      def channel id = nil
+        id ||= "#{current_user.organisation_id}#{env["REQUEST_PATH"].gsub(/\/ws/,"")}"
+        Pubs.channels[id]
       end
 
-      def defer &blok
+      def defer channel_id, &blok
 
-        keepalive = EM.add_periodic_timer(SERVER_TIME_OUT) do
-          push! STATUSES[:keepalive]
+        env['keepalive'] = EM.add_periodic_timer(SERVER_TIME_OUT) do
+          push! STATUSES[:keepalive], channel_id
         end
 
         action = proc {
-          sleep(1) if Pubs.env.development?
           yield
         }
 
@@ -126,11 +126,9 @@ module Pubs
 
       end
 
-      def push! msg
+      def push! msg, channel_id = nil
         msg = Oj.dump(msg) unless msg.is_a?(String)
-        ap channel
-        ap msg
-        channel.push(msg)
+        channel(channel_id).push(msg)
       end
 
     end
