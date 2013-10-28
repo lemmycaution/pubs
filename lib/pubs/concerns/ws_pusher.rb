@@ -6,11 +6,11 @@ module Pubs
   module Concerns
     module WSPusher
       extend ActiveSupport::Concern
-  
+
       def push message
         if EventMachine.reactor_running?
           puts "streamer: #{message}"
-          Pubs.channels[self.organisation_id] << Oj.dump({status: message})
+          Pubs.channels["#{self.organisation_id}_#{self.class.table_name}"] << Oj.dump({status: message})
         end
       end
 
