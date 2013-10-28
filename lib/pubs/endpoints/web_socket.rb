@@ -7,6 +7,13 @@ module Pubs
   module Endpoints
     class WebSocket < Goliath::WebSocket
 
+      STATUSES = {
+        keepalive: {status: 0},
+        closed: {status: -1}
+      }.freeze
+
+      SERVER_TIME_OUT = 25
+
       include Helpers::Router
       include Pubs::Rack::Session::Helper
 
@@ -106,12 +113,17 @@ module Pubs
 
       def defer &blok
 
+        keepalive = EM.add_periodic_timer(SERVER_TIME_OUT) do
+          push! STATUSES[:keepalive]
+        end
+
         action = proc {
           sleep(1) if Pubs.env.development?
           yield
         }
 
         callback = proc { |result|
+          keepalive.cancel
           result
         }
 
