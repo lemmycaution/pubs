@@ -65,7 +65,7 @@ module Pubs
           self.addons[addon['name']].update(
           {
             'attachment_name' => "HEROKU_POSTGRESQL_#{attachment_name}",
-            'url' => Pubs.mock? ? "postgres://localhost/pubs_db_development" : url
+            'url' => Pubs.mock? ? Pubs.mock(:addons)["heroku-postgresql"]["url"] : url
           }
           )
           

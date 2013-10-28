@@ -1,11 +1,7 @@
 desc "test[file] with minitest"
 task :test,[:file] do |t,args|
   
-  begin
-    require "config/application"
-  rescue Exception => e
-    nil
-  end
+  require "config/application"  if File.exists? "config/application"
   
   require 'pubs/config'
   

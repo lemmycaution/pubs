@@ -1,63 +1,69 @@
+require 'active_support/concern'
 require 'pubs/http/client'
-
+require 'pubs/endpoints/helpers/template'
 module Concerns
   
   module Hooks
       
     extend ActiveSupport::Concern
     
+    include Pubs::Endpoints::Helpers::Template::Helpers
+    
+    
     included do
-      after_create do  
-        run_hooks(:after_create) if has_model?
+      before_create do
+        run_hooks :before_create if has_model?
+      end
+      before_update do
+        run_hooks :before_update if has_model?
+      end
+      before_destroy do
+        run_hooks :before_destroy if has_model?
+      end
+      
+      after_create do
+        run_hooks :after_create if has_model?
       end
       after_update do
-        run_hooks(:after_update) if has_model?
-      end      
+        run_hooks :after_update if has_model?
+      end
       after_destroy do
-        run_hooks(:after_destroy) if has_model?
-      end            
+        run_hooks :after_destroy if has_model?
+      end
     end
-    
-    private
-    
-    def url_for(subdomain, path, params = nil)
-      protocol = subdomain == "id" ? "https" : "http"
-      query = params.nil? ? "" : "?#{params.to_query}"
-      "#{protocol}://#{Pubs.subdomains.try(:[],subdomain)}/#{path}#{query}"
-    end
-    
 
-    
     def run_hooks(callback)
+      # get the hooks hash for a callback
       if hooks = self.model.hooks[callback]
-        hooks.each do |api, actions|
-          run_hook callback, api, actions
+        # run every single action
+        hooks.each do |api, uri|
+          run_hook callback, api, uri
         end
       end
     end
     
-    def run_hook callback, api, actions
+    def run_hook callback, api, uri, head = {}
       
-      Pubs::HTTP::Client.new.post( hook_api_url(api), {
-        head: {
-          "X-Api-Key" => hook_api_key(api)
-        }, 
-        body: {
-          callback: callback,
-          method: name,
-          actions: actions,
-          unit: self.as_json
-        }
+      # parse uri
+      protocol, api_key, domain = uri.match(/(.+):\/\/(.+)?@(.+)/).try(:captures)
+      
+      return if protocol.nil? or domain.nil? 
+      
+      # set api key header if protocol is wire
+      if api == :wire
+        return if api_key.nil?
+        head["X-Api-Key"] = api_key 
+        protocol = domain.include?("herokuapp") ? "https" : "http"
+      end
+      url = "#{protocol}://#{domain}"
+      
+      # async http request, but we don't care the response for now
+      puts "#{callback}"
+      result = Pubs::HTTP::Client.new.post( url, { head: head, 
+        query:{api_key: api_key}, body: { callback: callback, unit: self.as_json }
       })
+
       
-    end
-    
-    def hook_api_url(api)
-      self.model.hooks.try(:[],:apis).try(:[],api).try(:[],:url)
-    end
-    
-    def hook_api_key(api)
-      self.model.hooks.try(:[],:apis).try(:[],api).try(:[],:key)
     end
             
   end

@@ -8,13 +8,14 @@ module Pubs
       
       include Pubs::Endpoints::Helpers::Template::Helpers
       
-      def deliver from, to, subject, body
+      def deliver from, to, subject, body, headers = {}
         mail = Mail.new do
           from    from
           to      to
           subject subject
           body    body
         end
+        headers.each{ |k,v| mail.header[k]=v }
         unless Pubs.env.production?
           mail.delivery_method :sendmail 
         else

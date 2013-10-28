@@ -38,7 +38,7 @@ module Pubs
   
         # Extract locale from request path
         def path_locale
-          if path_locale = env['"REQUEST_PATH"'].scan(LNG_EXP_PATH).first
+          if path_locale = env['REQUEST_PATH'].scan(LNG_EXP_PATH).first
             path_locale.gsub("/","").to_sym
           end
         end

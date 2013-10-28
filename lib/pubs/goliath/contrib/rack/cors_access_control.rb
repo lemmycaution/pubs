@@ -2,7 +2,7 @@ require 'pubs/clients/constants'
 require 'goliath/rack'
 require 'base64'
 require 'aescrypt'
-
+require 'bcrypt'
 module Goliath
   module Contrib
     module Rack

@@ -5,10 +5,10 @@ namespace :assets do
   desc "compiles assets for production"
   task :compile do
     #app assets
-    system "bundle exec coffee --map --compile --output #{app_script_path} app/assets/scripts"
+    system "bundle exec coffee --compile --output #{app_script_path} app/assets/scripts"
     system "bundle exec sass --style compact --load-path #{lib_style_path} --force --update app/assets/styles:#{app_style_path}"
     #statics
-    system "bundle exec coffee --map --compile --output #{static_script_path} #{lib_script_path}"    
+    system "bundle exec coffee --compile --output #{static_script_path} #{lib_script_path}"    
     system "bundle exec sass --style compact --force --update #{lib_style_path}:#{static_style_path}"
   end
   
