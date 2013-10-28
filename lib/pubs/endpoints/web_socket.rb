@@ -105,7 +105,7 @@ module Pubs
         Pubs.channels[id]
       end
 
-      def defer channel_id, &blok
+      def defer channel_id = nil, &blok
 
         env['keepalive'] = EM.add_periodic_timer(SERVER_TIME_OUT) do
           push! STATUSES[:keepalive], channel_id
