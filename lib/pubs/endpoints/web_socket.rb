@@ -40,11 +40,7 @@ module Pubs
             env.logger.warn "NO USER FOUND !!!"
           end
 
-          d=Oj.load(m)
-          if d['pubs_sid'] != env['HTTP_SEC_WEBSOCKET_KEY']
-            d.delete('pubs_sid')
-            env.stream_send(Oj.dump(d))
-          end
+          env.stream_send(m)
         }
       end
 
@@ -55,10 +51,7 @@ module Pubs
           env.logger.warn "NO USER FOUND !!!"
         end
         env.logger.info("WS MESSAGE #{env['HTTP_SEC_WEBSOCKET_KEY']}")
-
-        d=Oj.load(msg)
-        d['pubs_sid']=env['HTTP_SEC_WEBSOCKET_KEY']
-        push! d
+        push! msg
       end
 
       def on_close(env)
@@ -123,7 +116,7 @@ module Pubs
         }
 
         callback = proc { |result|
-          keepalive.cancel
+          #keepalive.cancel
           result
         }
 
@@ -134,7 +127,10 @@ module Pubs
       end
 
       def push! msg
-        channel.push(Oj.dump(msg))
+        msg = Oj.dump(msg) unless msg.is_a?(String)
+        ap channel
+        ap msg
+        channel.push(msg)
       end
 
     end
