@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["me@onuruyar.com"]
   spec.description   = %q{Pubs IO Private Library}
   spec.summary       = %q{Pubs IO Private Library}
-  spec.homepage      = ""
+  spec.homepage      = "http://www.pubs.io"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
