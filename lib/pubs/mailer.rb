@@ -13,24 +13,26 @@ module Pubs
           from    from
           to      to
           subject subject
-          ap body
-          if body.is_a?(Hash)
-            if body["text"]
-              text_part do
-                body["text"]
-              end
-            end
-            if body["html"]
-              html_part do
-                content_type 'text/html; charset=UTF-8'
-                body["html"]
-              end
-            end
-          else
-            body    body
-          end
         end
+
+        body = { "text" => body } if body.is_a?(String)
+
+        text_part = Mail::Part.new do
+          body body['text']
+        end
+        mail.text_part = text_part
+
+        if body['html']
+          html_part = Mail::Part.new do
+            content_type 'text/html; charset=UTF-8'
+            body body['html']
+          end
+          mail.html_part = html_part
+        end
+
+
         headers.each{ |k,v| mail.header[k]=v }
+
         unless Pubs.env.production?
           mail.delivery_method :sendmail
         else

@@ -71,9 +71,6 @@ module Pubs
 
           end
 
-          ap path
-          ap self
-
           catch :halt do |response|
             # run if there is a api for it
             if block
