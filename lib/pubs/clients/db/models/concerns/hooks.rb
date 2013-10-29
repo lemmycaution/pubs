@@ -2,14 +2,14 @@ require 'active_support/concern'
 require 'pubs/http/client'
 require 'pubs/endpoints/helpers/template'
 module Concerns
-  
+
   module Hooks
-      
+
     extend ActiveSupport::Concern
-    
+
     include Pubs::Endpoints::Helpers::Template::Helpers
-    
-    
+
+
     included do
       before_create do
         run_hooks :before_create if has_model?
@@ -20,7 +20,7 @@ module Concerns
       before_destroy do
         run_hooks :before_destroy if has_model?
       end
-      
+
       after_create do
         run_hooks :after_create if has_model?
       end
@@ -41,31 +41,32 @@ module Concerns
         end
       end
     end
-    
+
     def run_hook callback, api, uri, head = {}
-      
+
       # parse uri
       protocol, api_key, domain = uri.match(/(.+):\/\/(.+)?@(.+)/).try(:captures)
-      
-      return if protocol.nil? or domain.nil? 
-      
+
+      return if protocol.nil? or domain.nil?
+
       # set api key header if protocol is wire
       if api == :wire
         return if api_key.nil?
-        head["X-Api-Key"] = api_key 
+        head["X-Api-Key"] = api_key
         protocol = domain.include?("herokuapp") ? "https" : "http"
+      else
+        query = { api_key: api_key }
       end
       url = "#{protocol}://#{domain}"
-      
+
       # async http request, but we don't care the response for now
-      puts "#{callback}"
-      result = Pubs::HTTP::Client.new.post( url, { head: head, 
-        query:{api_key: api_key}, body: { callback: callback, unit: self.as_json }
+      result = Pubs::HTTP::Client.new.post( url, { head: head,
+        query: query, body: { callback: callback, unit: self.as_json }
       })
 
-      
+
     end
-            
+
   end
 end
 
