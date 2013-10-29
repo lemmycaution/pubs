@@ -13,6 +13,7 @@ module Pubs
           from    from
           to      to
           subject subject
+          ap body
           if body.is_a?(Hash)
             if body["text"]
               text_part do
