@@ -32,6 +32,11 @@ module Pubs
         @env = env
         force_session!(env)
         return unless current_user
+
+        env['keepalive'] = EM.add_periodic_timer(SERVER_TIME_OUT) do
+          push! STATUSES[:keepalive]
+        end
+
         env.logger.info("WS OPEN #{env['HTTP_SEC_WEBSOCKET_KEY']}")
         env['subscription'] = channel.subscribe { |m|
 
@@ -107,9 +112,9 @@ module Pubs
 
       def defer channel_id = nil, &blok
 
-        env['keepalive'] = EM.add_periodic_timer(SERVER_TIME_OUT) do
-          push! STATUSES[:keepalive], channel_id
-        end
+        # env['keepalive'] = EM.add_periodic_timer(SERVER_TIME_OUT) do
+        #   push! STATUSES[:keepalive], channel_id
+        # end
 
         action = proc {
           yield
