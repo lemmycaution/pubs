@@ -56,7 +56,7 @@ module Pubs
 
       def price
         return (BASE_PRICE + (dynos * BASE_DYNO_PRICE)) / 100 if Pubs.mock?
-        ((addons.try(:[],self.class.main_addon).try(:[],"price").try(:[],"cents") || 0) + BASE_PRICE) + (dynos * BASE_DYNO_PRICE) / 100
+        ((addons.try(:[],self.class.main_addon).try(:[],"price").try(:[],"cents").to_i || 0) + BASE_PRICE) + (dynos * BASE_DYNO_PRICE) / 100
       end
 
       private
