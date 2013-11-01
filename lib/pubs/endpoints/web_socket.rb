@@ -23,7 +23,7 @@ module Pubs
           klass.use Goliath::Rack::Params
           klass.use Goliath::Rack::Render
           klass.use Goliath::Rack::DefaultMimeType
-          klass.use Goliath::Rack::SimpleAroundwareFactory, Pubs::Rack::Session
+          klass.use Goliath::Rack::SimpleAroundwareFactory, Pubs::Rack::Session, "pubs-io"
           super
         end
       end

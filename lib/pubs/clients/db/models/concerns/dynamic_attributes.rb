@@ -1,12 +1,12 @@
 module Concerns
   module DynamicAttributes
-    
+
     extend ActiveSupport::Concern
-    
+
     included do
       after_initialize :set_accessors
     end
-    
+
     def self.store_accessor(store_attribute, *keys, model)
       keys = keys.flatten
 
@@ -26,7 +26,7 @@ module Concerns
 
       self.stored_attributes[model][store_attribute] ||= []
       self.stored_attributes[model][store_attribute] |= keys
-    end  
+    end
 
 
     def assign_attributes(new_attributes)
@@ -39,14 +39,14 @@ module Concerns
       attributes = sanitize_for_mass_assignment(attributes)
 
       attributes.each do |k, v|
-        
+
         if k.include?("(")
           multi_parameter_attributes << [ k, v ]
         elsif v.is_a?(Hash)
           nested_parameter_attributes << [ k, v ]
-        # the key trick!  
+        # the key trick!
         elsif self.model.try(:key) == k
-          self.key = v  
+          self.key = v
         else
           _assign_attribute(k, v)
         end
@@ -55,10 +55,10 @@ module Concerns
       assign_nested_parameter_attributes(nested_parameter_attributes) unless nested_parameter_attributes.empty?
       assign_multiparameter_attributes(multi_parameter_attributes) unless multi_parameter_attributes.empty?
     end
-  
+
     private
 
-  
+
     def set_accessors
 
       if k = model.try(:key)
@@ -67,14 +67,15 @@ module Concerns
         def #{k}=val; self.key=val end
         CODE
       end
-      
+
       self.data ||= {}
-        
-      accessors = self.data.keys + (model.try(:persistents) || [])
+
+      # accessors = self.data.keys + (model.try(:persistents) || [])
+      accessors =  model.try(:persistents)
       self.class.store_accessor :data, *accessors, model.try(:name) || "Unit"
-      
+
       self.class.send :attr_accessor, *model.try(:stubs)
-    
+
     end
   end
 end
