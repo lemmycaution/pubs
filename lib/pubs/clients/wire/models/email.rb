@@ -2,7 +2,7 @@ class Email < ActiveRecord::Base
 
   attr_accessor :locale, :subject, :text_body, :html_body
 
-  validates_presence_of :from
+  # validates_presence_of :from
 
   validate :check_content
 
@@ -17,7 +17,7 @@ class Email < ActiveRecord::Base
   before_save :set_key
 
   def self.fetch key
-    Pubs.cache.get key
+    Oj.load(Pubs.cache.get("wire:emails:#{key}") || "")
   end
 
   def as_json(options = {})
@@ -36,7 +36,7 @@ class Email < ActiveRecord::Base
   end
 
   def cache!
-    Pubs.cache.set "wire:emails:#{self.key}", self.to_json
+    Pubs.cache.set "wire:emails:#{self.key}", Oj.dump(self.as_json)
   end
 
   def check_content

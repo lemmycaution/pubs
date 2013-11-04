@@ -42,7 +42,7 @@ module Concerns
       end
     end
 
-    def run_hook callback, api, uri, head = {}
+    def run_hook event, api, uri, head = {}, query = {}
 
       # parse uri
       protocol, api_key, domain = uri.match(/(.+):\/\/(.+)?@(.+)/).try(:captures)
@@ -54,16 +54,18 @@ module Concerns
         return if api_key.nil?
         head["X-Api-Key"] = api_key
         protocol = domain.include?("herokuapp") ? "https" : "http"
+        body = { action: event, context: self.as_json }
       else
-        query = { api_key: api_key }
+        # query = { api_key: api_key }
+        body = { api_key: api_key, event: event, unit: self.as_json }
       end
       url = "#{protocol}://#{domain}"
 
       # async http request, but we don't care the response for now
       result = Pubs::HTTP::Client.new.post( url, { head: head,
-        query: query, body: { callback: callback, unit: self.as_json }
+        query: query, body: body
       })
-
+      ap result.response
 
     end
 

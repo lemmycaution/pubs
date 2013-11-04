@@ -18,8 +18,9 @@ module Pubs
       module Helper
 
         def force_session!(_env)
-          cookie = ::Rack::Utils.parse_query(_env["HTTP_COOKIE"])
-          env[ENV_SESSION_KEY] = Oj.load(Pubs.cache.get("sessions:#{cookie[SID]}") || "")
+          # cookie = ::Rack::Utils.parse_query(_env[HTTP_COOKIE])
+          # env[ENV_SESSION_KEY] = Oj.load(Pubs.cache.get("sessions:#{cookie[_env['SID']]}") || "")
+
         end
 
         def session
@@ -58,7 +59,7 @@ module Pubs
       end
 
       def initialize(env, sid = SID)
-        @sid = sid
+        env['SID'] = sid
         super(env)
       end
 
@@ -83,11 +84,12 @@ module Pubs
         end
 
         def get_session
-          session = Pubs.cache.get(cache_session_key)
-          env[ENV_SESSION_KEY] = session ? Oj.load( session ) : {}
+          _session = Pubs.cache.get(cache_session_key)
+          env[ENV_SESSION_KEY] = _session ? Oj.load( _session ) : {}
         end
 
         def set_session
+          if env[ENV_SESSION_KEY]
           session_data = env[ENV_SESSION_KEY].delete_if{ |k, v| v.nil? }
           # if session_data.empty?
           #   Pubs.cache.delete cache_session_key
@@ -96,19 +98,20 @@ module Pubs
           #   })
           # else
             Pubs.cache.set cache_session_key, Oj.dump( session_data ), TTL
-            ::Rack::Utils.set_cookie_header!(headers, @sid, {
+            ::Rack::Utils.set_cookie_header!(headers, env['SID'], {
               value: session_key, path: "/", domain: domain
             })
           # end
+          end
         end
 
         def cache_session_key
-          "#{@sid}:sessions:#{session_key}"
+          "#{env['SID']}:sessions:#{session_key}"
         end
 
         def session_key
           cookie = ::Rack::Utils.parse_query(env[HTTP_COOKIE])
-          cookie[@sid].present? ? cookie[@sid] : Pubs.generate_key
+          cookie[env['SID']].present? ? cookie[env['SID']] : Pubs.generate_key
         end
 
       end
