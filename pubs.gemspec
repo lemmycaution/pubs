@@ -20,28 +20,28 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
-    
-  # Data  
+
+  # Data
   spec.add_runtime_dependency "pg"
-  spec.add_runtime_dependency "activerecord", "~> 4.0.0"  
-  spec.add_runtime_dependency "bcrypt-ruby", "~> 3.0.0"    
-  spec.add_runtime_dependency "dalli", "~> 2.6.4"     
+  spec.add_runtime_dependency "activerecord", "~> 4.0.0"
+  spec.add_runtime_dependency "bcrypt-ruby", "~> 3.1.2"
+  spec.add_runtime_dependency "dalli", "~> 2.6.4"
   spec.add_runtime_dependency "surus"
-  spec.add_runtime_dependency "pg_search"  
-  
+  spec.add_runtime_dependency "pg_search"
+
   # Server
-  spec.add_runtime_dependency "goliath", "~> 1.0.3"  
-  spec.add_runtime_dependency "foreman" 
-  
-  # Support  
-  spec.add_runtime_dependency "i18n"    
-  spec.add_runtime_dependency "tilt"     
-  spec.add_runtime_dependency "activesupport", "~> 4.0.0"    
+  spec.add_runtime_dependency "goliath", "~> 1.0.3"
+  spec.add_runtime_dependency "foreman"
+
+  # Support
+  spec.add_runtime_dependency "i18n"
+  spec.add_runtime_dependency "tilt"
+  spec.add_runtime_dependency "activesupport", "~> 4.0.0"
   spec.add_runtime_dependency "oj"
   spec.add_runtime_dependency 'em-http-request'
-  spec.add_runtime_dependency 'heroku'    
-  spec.add_runtime_dependency 'heroku-api'    
-  spec.add_runtime_dependency 'mail'  
+  spec.add_runtime_dependency 'heroku'
+  spec.add_runtime_dependency 'heroku-api'
+  spec.add_runtime_dependency 'mail'
   spec.add_runtime_dependency 'aescrypt'
-  
+
 end
