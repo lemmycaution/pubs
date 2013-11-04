@@ -33,8 +33,9 @@ module Pubs
         force_session!(env)
         return unless current_user
 
+        env['keepalive_cid'] = "#{current_user.organisation_id}#{env["REQUEST_PATH"].gsub(/\/ws/,"")}"
         env['keepalive'] = EM.add_periodic_timer(SERVER_TIME_OUT) do
-          push! STATUSES[:keepalive]
+          push! STATUSES[:keepalive], env['keepalive_cid']
         end
 
         env.logger.info("WS OPEN #{env['HTTP_SEC_WEBSOCKET_KEY']}")
