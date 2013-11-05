@@ -7,8 +7,8 @@ class Task < ActiveRecord::Base
   validates_uniqueness_of :key
   before_save :normalize_key
 
-  has_many :jobs, class_name: "::Delayed::Job",
-  foreign_key: "queue", primary_key: "key"
+  # has_many :jobs, class_name: "::Delayed::Job",
+  # foreign_key: "queue", primary_key: "key"
 
   attr_accessor :code
 
@@ -34,17 +34,23 @@ class Task < ActiveRecord::Base
 
       params = job.values.first
       klass = job.keys.first
+      queue_name = "#{self.key}_#{action}_#{context["id"]}"
 
-      Delayed::Job.enqueue(
-      # create Job with contextual object, action and parameters
-      "Jobs::#{klass.classify}".constantize.new(context, params),
-      # name the queue with tasks key
-      queue: self.key,
-      # set priority or default is top!
-      priority: params["priority"] || 0,
-      # schedule if exists or run immediately
-      run_at: eval(params.try(:[],"schedule") || "Time.now")
-      )
+      unless job = Delayed::Job.find_by(queue: queue_name)
+        job = Delayed::Job.enqueue(
+        # create Job with contextual object, action and parameters
+        "Jobs::#{klass.classify}".constantize.new(context, params),
+        # name the queue with tasks key
+        queue: queue_name,
+        # set priority or default is top!
+        priority: params["priority"] || 0,
+        # schedule if exists or run immediately
+        run_at: eval(params.try(:[],"schedule") || "Time.now")
+        )
+        ap "ENQUED #{job.inspect}"
+      end
+
+      job
 
     }
   end
