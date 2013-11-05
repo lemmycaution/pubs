@@ -12,13 +12,13 @@ class Email < ActiveRecord::Base
     end
   end
 
-  after_commit :cache!
+  # after_commit :cache!
 
   before_save :set_key
 
-  def self.fetch key
-    Oj.load(Pubs.cache.get("wire:emails:#{key}") || "")
-  end
+  # def self.fetch key
+  #   Oj.load(Pubs.cache.get("wire:emails:#{key}") || "")
+  # end
 
   def as_json(options = {})
     super(options.merge({methods:[:subject,:text_body,:html_body]}))
@@ -35,9 +35,9 @@ class Email < ActiveRecord::Base
     self.key = self.subject.parameterize.underscore
   end
 
-  def cache!
-    Pubs.cache.set "wire:emails:#{self.key}", Oj.dump(self.as_json)
-  end
+  # def cache!
+  #   Pubs.cache.set "wire:emails:#{self.key}", Oj.dump(self.as_json)
+  # end
 
   def check_content
     self.errors.add :subject, :blank unless self.translations[I18n.locale.to_s]["subject"].present?
