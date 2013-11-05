@@ -46,7 +46,7 @@ module Pubs
             :enable_starttls_auto => true
           }
         end
-        puts mail if Pubs.env.development?
+        # puts mail if Pubs.env.development?
         mail.deliver
       end
 
