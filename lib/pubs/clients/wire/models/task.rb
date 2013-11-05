@@ -30,11 +30,11 @@ class Task < ActiveRecord::Base
       return false
     end
 
-    self.actions[action].each { |job|
+    self.actions[action].each_with_index { |job, index|
 
       params = job.values.first
       klass = job.keys.first
-      queue_name = "#{self.key}_#{action}_#{context["id"]}"
+      queue_name = "#{self.key}_#{action}_#{klass}_#{index}_#{context["id"]}"
 
       unless job = Delayed::Job.find_by(queue: queue_name)
         job = Delayed::Job.enqueue(
