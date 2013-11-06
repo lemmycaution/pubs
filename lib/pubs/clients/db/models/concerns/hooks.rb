@@ -28,13 +28,17 @@ module Concerns
       # get the hooks hash for a callback
       if hooks = self.model.hooks[callback]
         # run every single action
-        hooks.each do |api, uri|
-          run_hook callback, api, uri
+        hooks.each do |api, params|
+          run_hook callback, api, params
         end
       end
     end
 
-    def run_hook event, api, uri, head = {}, query = {}
+    def run_hook event, api, params
+
+      head  = params[:head] || {}
+      query = params[:query] || {}
+      uri   = params[:uri]
 
       # parse uri
       protocol, api_key, domain = uri.match(/(.+):\/\/(.+)?@(.+)/).try(:captures)
@@ -46,19 +50,14 @@ module Concerns
         return if api_key.nil?
         head["X-Api-Key"] = api_key
         protocol = domain.include?("herokuapp") ? "https" : "http"
-        body = { action: event, context: self.as_json }
+        body = { action: event, job_id: self.id, context: {data: self.as_json} }
       else
-        # query = { api_key: api_key }
-        body = { api_key: api_key, action: event, unit: self.as_json }
+        body = { action: event, unit: self.as_json }
       end
       url = "#{protocol}://#{domain}"
 
       # async http request, but we don't care the response for now
-      http = client.post( url, { head: head,
-        query: query, body: body
-      })
-
-      puts "RUNNING HOOK event: #{event} response: #{http}"
+      http = client.post( url, { head: head, query: query, body: body} )
 
     end
 

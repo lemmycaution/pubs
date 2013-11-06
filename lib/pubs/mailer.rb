@@ -47,7 +47,7 @@ module Pubs
           }
         end
         # puts mail if Pubs.env.development?
-        mail.deliver
+        mail.deliver!
       end
 
       private

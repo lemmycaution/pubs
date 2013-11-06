@@ -9,7 +9,7 @@ module Pubs
 
       def push message
         if EventMachine.reactor_running?
-          puts "ws_pusher: #{message}"
+          puts "[ws_pusher] channel_id: #{channel_id} message: #{message}"
           Pubs.channels[channel_id] << Oj.dump({status: message})
         end
       end

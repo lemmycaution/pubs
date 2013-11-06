@@ -1,3 +1,5 @@
+require 'sanitize'
+
 class Email < ActiveRecord::Base
 
   attr_accessor :locale, :subject, :text_body, :html_body
@@ -15,6 +17,8 @@ class Email < ActiveRecord::Base
   # after_commit :cache!
 
   before_save :set_key
+  before_validation :set_text_body
+
 
   # def self.fetch key
   #   Oj.load(Pubs.cache.get("wire:emails:#{key}") || "")
@@ -33,6 +37,12 @@ class Email < ActiveRecord::Base
 
   def set_key
     self.key = self.subject.parameterize.underscore
+  end
+
+  def set_text_body
+    self.translations.keys.each do |local|
+      self.translations[local]['text_body'] = Sanitize.clean(self.translations[local]['text_body'] || "")
+    end
   end
 
   # def cache!

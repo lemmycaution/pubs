@@ -23,7 +23,7 @@ class Task < ActiveRecord::Base
   end
 
   # enqueue all tasks
-  def queue action, context
+  def queue action, job_id, context
 
     unless self.actions[action].is_a?(Array)
       self.errors.add :actions, "action[#{action}] is not an Array"
@@ -34,7 +34,7 @@ class Task < ActiveRecord::Base
 
       params = job.values.first
       klass = job.keys.first
-      queue_name = "#{self.key}_#{action}_#{klass}_#{index}_#{context["id"]}"
+      queue_name = "#{self.key}_#{action}_#{klass}_#{index}_#{job_id}"
 
       unless job = Delayed::Job.find_by(queue: queue_name)
         job = Delayed::Job.enqueue(
@@ -47,7 +47,6 @@ class Task < ActiveRecord::Base
         # schedule if exists or run immediately
         run_at: eval(params.try(:[],"schedule") || "Time.now")
         )
-        ap "ENQUED #{job.inspect}"
       end
 
       job
