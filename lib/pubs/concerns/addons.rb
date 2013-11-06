@@ -46,7 +46,7 @@ module Pubs
 
         def prices group
           i = 1
-          self.addon_plans(group).map{|k,a| (a["price"]["cents"].to_i + (BASE_PRICE * ++i)) / 100 }
+          self.addon_plans(group).map{|k,a| ((a["price"]["cents"].to_i + (BASE_PRICE.to_i * ++i)).to_i / 100).to_i }
         end
       end
 
@@ -56,7 +56,7 @@ module Pubs
 
       def price
         return (BASE_PRICE + (dynos * BASE_DYNO_PRICE)) / 100 if Pubs.mock?
-        ((addons.try(:[],self.class.main_addon).try(:[],"price").try(:[],"cents").to_i || 0) + BASE_PRICE) + (dynos * BASE_DYNO_PRICE) / 100
+        (((addons.try(:[],self.class.main_addon).try(:[],"price").try(:[],"cents").to_i || 0).to_i + BASE_PRICE.to_i) + (dynos.to_i * BASE_DYNO_PRICE.to_i) / 100.to_i).to_i
       end
 
       private
