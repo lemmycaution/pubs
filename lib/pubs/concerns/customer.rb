@@ -5,12 +5,14 @@ module Pubs
     module Customer
 
       def customer
+        return if self.role.root?
         unless self.meta['stripe_customer_id'].nil?
           Stripe::Customer.retrieve(self.meta['stripe_customer_id'])
         end
       end
 
       def add_product product
+        return if self.role.root?
         if _ii = product.invoices.first
           amount = product.price * 100 / ((_ii['created_at'] + 1.month) - Time.now) / 60 / 60 / 24
         else
@@ -36,11 +38,13 @@ module Pubs
       end
 
       def update_product product
+        return if self.role.root?
         remove_product product
         add_product product
       end
 
       def create_customer! token, plan
+        return if self.role.root?
         unless self.meta['stripe_customer_id']
 
           # Create a Customer
