@@ -1,4 +1,5 @@
 require 'em-synchrony/em-http'
+require 'httparty'
 
 module Pubs
   module HTTP
@@ -13,8 +14,11 @@ module Pubs
       end
 
       def request method, url, params = {}
-        return nil unless EventMachine.reactor_running?
-        http = EM::HttpRequest.new(url).send method, params
+        unless EventMachine.reactor_running?
+          http = HTTParty.send(method, url, params.symbolize_keys.tap{|p| p[:headers] = p.delete(:head)})
+        else
+          http = EM::HttpRequest.new(url).send method, params
+        end
         # http.response
       end
 

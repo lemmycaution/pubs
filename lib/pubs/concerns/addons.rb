@@ -1,5 +1,5 @@
 require 'active_support/hash_with_indifferent_access'
-
+require 'pubs/concerns/ws_pusher'
 module Pubs
   module Concerns
     module Addons
@@ -11,7 +11,7 @@ module Pubs
         BASE_PRICE            = 3000
         BASE_DYNO_PRICE       = 3000
 
-        [Forkable].each { |module_class|
+        [Forkable,WSPusher].each { |module_class|
           include module_class unless included_modules.include? module_class
         }
 
@@ -56,7 +56,10 @@ module Pubs
 
       def price
         return (BASE_PRICE + (dynos * BASE_DYNO_PRICE)) / 100 if Pubs.mock?
-        (((addons.try(:[],self.class.main_addon).try(:[],"price").try(:[],"cents").to_i || 0).to_i + BASE_PRICE.to_i) + (dynos.to_i * BASE_DYNO_PRICE.to_i) / 100.to_i).to_i
+        addons_price = addons.map{ |addon|
+            addon.values.first.try(:[],"price").try(:[],"cents").to_i || 0
+          }.inject{ |total, price| total + price }
+        (BASE_PRICE + addons_price + (dynos * BASE_DYNO_PRICE) ) / 100
       end
 
       private

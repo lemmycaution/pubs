@@ -1,7 +1,10 @@
 require 'active_support/inflector'
 require 'oj'
+require 'delayed_job'
 
 class Task < ActiveRecord::Base
+
+  IMMEDIATELY = "immediately"
 
   validates_presence_of :key,:actions
   validates_uniqueness_of :key
@@ -30,31 +33,65 @@ class Task < ActiveRecord::Base
       return false
     end
 
+    results = []
     self.actions[action].each_with_index { |job, index|
 
       params = job.values.first
       klass = job.keys.first
       queue_name = "#{self.key}_#{action}_#{klass}_#{index}_#{job_id}"
 
+
+
       unless job = Delayed::Job.find_by(queue: queue_name)
+
+        handler = "Jobs::#{klass.classify}".constantize.new(context, params)
+        schedule = params.try(:[],"schedule")
+
         job = Delayed::Job.enqueue(
         # create Job with contextual object, action and parameters
-        "Jobs::#{klass.classify}".constantize.new(context, params),
+        handler,
         # name the queue with tasks key
         queue: queue_name,
         # set priority or default is top!
         priority: params["priority"] || 0,
         # schedule if exists or run immediately
-        run_at: eval(params.try(:[],"schedule") || "Time.now")
+        run_at: eval(schedule || "Time.now")
         )
+
+        if schedule == IMMEDIATELY
+           job.update!(locked_by: "immediate_worker",locked_at: Time.now)
+
+          begin
+            handler.before(job)
+            results << handler.perform
+            handler.success(job)
+          rescue Exception => e
+            handler.error(job, e)
+            puts "ERROR --> #{e.inspect}"
+          ensure
+            handler.after(job)
+          end
+
+          job.destroy
+
+        else
+          results << job
+
+        end
+
       end
 
-      job
-
     }
+
+    results
   end
 
   private
+
+  # throw it to future avoid duplicate runs
+  def immediately
+    Time.now
+  end
 
   def normalize_key
     self.key  = self.key.parameterize.underscore

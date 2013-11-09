@@ -20,7 +20,6 @@ module Pubs
         def force_session!(_env)
           # cookie = ::Rack::Utils.parse_query(_env[HTTP_COOKIE])
           # env[ENV_SESSION_KEY] = Oj.load(Pubs.cache.get("sessions:#{cookie[_env['SID']]}") || "")
-
         end
 
         def session
@@ -28,21 +27,24 @@ module Pubs
         end
 
         def current_user
-          if session["sid"].present? && session_user = Pubs.cache.get(session["sid"])
-            Oj.load(session_user)
+          @user ||= begin
+            if session["sid"].present? && session_user_id = Pubs.cache.get(session["sid"])
+              User.unscoped.find_by(id: session_user_id.to_i)
+            end
           end
         end
 
         def sign_in! user
           user.reset_sid! unless user.sid.present?
           session["sid"] = user.sid
-          Pubs.cache.set user.sid, user.to_json( methods: [:organisation] ), TTL
+          Pubs.cache.set user.sid, user.id, TTL
         end
 
         def sign_out!
           if session["sid"]
             Pubs.cache.delete session["sid"]
             session["sid"] = nil
+            @current_user = nil
           end
         end
 
@@ -90,13 +92,13 @@ module Pubs
 
         def set_session
           if env[ENV_SESSION_KEY]
-          session_data = env[ENV_SESSION_KEY].delete_if{ |k, v| v.nil? }
-          # if session_data.empty?
-          #   Pubs.cache.delete cache_session_key
-          #   ::Rack::Utils.delete_cookie_header!(headers, @sid, {
-          #     value: session_key, path: "/", domain: domain
-          #   })
-          # else
+            session_data = env[ENV_SESSION_KEY].delete_if{ |k, v| v.nil? }
+            # if session_data.empty?
+            #   Pubs.cache.delete cache_session_key
+            #   ::Rack::Utils.delete_cookie_header!(headers, @sid, {
+            #     value: session_key, path: "/", domain: domain
+            #   })
+            # else
             Pubs.cache.set cache_session_key, Oj.dump( session_data ), TTL
             ::Rack::Utils.set_cookie_header!(headers, env['SID'], {
               value: session_key, path: "/", domain: domain

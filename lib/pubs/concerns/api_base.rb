@@ -1,9 +1,8 @@
+require 'bcrypt'
 require 'pubs/concerns/forkable'
 require 'pubs/concerns/scalable'
 require 'pubs/concerns/addons'
 require 'pubs/concerns/ws_pusher'
-
-require 'bcrypt'
 
 module Pubs
   module Concerns
