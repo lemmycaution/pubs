@@ -23,15 +23,15 @@ module Pubs
         end
 
         def session
-          env[ENV_SESSION_KEY] || {}
+          env[ENV_SESSION_KEY] ||= {}
         end
 
         def current_user
-          @user ||= begin
+          # @user ||= begin
             if session["sid"].present? && session_user_id = Pubs.cache.get(session["sid"])
               User.unscoped.find_by(id: session_user_id.to_i)
             end
-          end
+          # end
         end
 
         def sign_in! user
@@ -44,7 +44,6 @@ module Pubs
           if session["sid"]
             Pubs.cache.delete session["sid"]
             session["sid"] = nil
-            @current_user = nil
           end
         end
 
@@ -93,17 +92,17 @@ module Pubs
         def set_session
           if env[ENV_SESSION_KEY]
             session_data = env[ENV_SESSION_KEY].delete_if{ |k, v| v.nil? }
-            # if session_data.empty?
-            #   Pubs.cache.delete cache_session_key
-            #   ::Rack::Utils.delete_cookie_header!(headers, @sid, {
-            #     value: session_key, path: "/", domain: domain
-            #   })
-            # else
-            Pubs.cache.set cache_session_key, Oj.dump( session_data ), TTL
-            ::Rack::Utils.set_cookie_header!(headers, env['SID'], {
-              value: session_key, path: "/", domain: domain
-            })
-          # end
+            if session_data.empty?
+              Pubs.cache.delete cache_session_key
+              ::Rack::Utils.delete_cookie_header!(headers, env['SID'], {
+                value: session_key, path: "/", domain: domain
+              })
+            else
+              Pubs.cache.set cache_session_key, Oj.dump( session_data ), TTL
+              ::Rack::Utils.set_cookie_header!(headers, env['SID'], {
+                value: session_key, path: "/", domain: domain
+              })
+            end
           end
         end
 

@@ -19,7 +19,7 @@ module Goliath
           'Access-Control-Allow-Origin'   => '*',
           'Access-Control-Expose-Headers' => 'X-CSRF-Token,X-Sid',
           'Access-Control-Max-Age'        => '0',
-          'Access-Control-Allow-Methods'  => 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Methods'  => 'POST, PUT, GET, OPTIONS',
           'Access-Control-Allow-Headers'  => 'Content-Type,X-CSRF-Token,X-Sid'
           # 'Access-Control-Allow-Credentials' => 'true'
         }.freeze

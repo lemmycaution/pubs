@@ -72,12 +72,14 @@ module Pubs
       def ensure_mock_app
         unless new_record?
           begin
-            heroku.get_app(self.app["name"])
+            heroku.get_app(mock_fork['name'])
           rescue Exception => e
+            puts "STATUS!!!! #{e.try(:response).try(:status) == 404}"
             if e.try(:response).try(:status) == 404
-              heroku.post_app(name: mock_fork['name'], stack: 'cedar').body
+              res = heroku.post_app(name: mock_fork['name'], stack: 'cedar').body rescue nil
+              return res
             else
-              # raise e
+              raise e
               puts "--> Error Forkable#ensure_mock_app #{e}"
             end
           end

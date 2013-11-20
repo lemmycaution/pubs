@@ -56,6 +56,14 @@ module Concerns
       assign_multiparameter_attributes(multi_parameter_attributes) unless multi_parameter_attributes.empty?
     end
 
+    def increment_data_field field, amount = 1
+      self.update_attribute(data: self.data.tap{|d| d[field] += amount})
+    end
+
+    def decrement_data_field field, amount = 1
+      self.update_attribute(data: self.data.tap{|d| d[field] -= amount})
+    end
+
     private
 
 

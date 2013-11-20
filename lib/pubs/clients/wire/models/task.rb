@@ -63,7 +63,8 @@ class Task < ActiveRecord::Base
 
           begin
             handler.before(job)
-            results << handler.perform
+            handler.perform
+            results << handler.result
             handler.success(job)
           rescue Exception => e
             handler.error(job, e)
