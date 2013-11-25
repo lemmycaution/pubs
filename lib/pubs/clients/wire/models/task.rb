@@ -66,14 +66,13 @@ class Task < ActiveRecord::Base
             handler.perform
             results << handler.result
             handler.success(job)
+            job.destroy
           rescue Exception => e
             handler.error(job, e)
             puts "ERROR --> #{e.inspect}"
           ensure
             handler.after(job)
           end
-
-          job.destroy
 
         else
           results << job
