@@ -68,7 +68,9 @@ class Task < ActiveRecord::Base
             handler.success(job)
             job.destroy
           rescue Exception => e
+            job.update_column(:last_error, e.backtrace)
             handler.error(job, e)
+            handler.failure(job)
             puts "ERROR --> #{e.inspect}"
           ensure
             handler.after(job)
