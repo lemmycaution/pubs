@@ -19,7 +19,7 @@ module Goliath
           'Access-Control-Allow-Origin'   => '*',
           'Access-Control-Expose-Headers' => 'X-CSRF-Token,X-Sid',
           'Access-Control-Max-Age'        => '0',
-          'Access-Control-Allow-Methods'  => 'POST, PUT, GET, OPTIONS',
+          'Access-Control-Allow-Methods'  => 'POST, PUT, PATCH, GET, OPTIONS',
           'Access-Control-Allow-Headers'  => 'Content-Type,X-CSRF-Token,X-Sid'
           # 'Access-Control-Allow-Credentials' => 'true'
         }.freeze
@@ -29,10 +29,10 @@ module Goliath
           # XHR? what? piss off dude
           raise Goliath::Validation::UnauthorizedError if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
 
-          # Authenticate By Api Key if request not an CROS ajax
+          # Authenticate By Api Key if request not an CORS ajax
           if env[HTTP_ORIGIN].nil?
             raise Goliath::Validation::UnauthorizedError  unless http_auth_by_key!(env)
-            super(env)
+            return super(env)
 
           else
             # By Outsiders

@@ -34,7 +34,7 @@ module Concerns
       # puts "MODEL #{model.as_json}"
 
       # puts "MODEL VALS #{model.validations}"
-
+      translations = model.translations
       model.validations.each do |field, rules|
 
         # validators = self.class.validators_on(field)
@@ -46,7 +46,12 @@ module Concerns
           # unless self.class.dynamic_validators.include? hex
             # if validators.empty? || !validators.map(&:kind).include?(kind)
             self.class.instance_exec(field, val) { |field, val|
-              validates field, eval("{#{val}}")
+              ops = eval("{#{val}}")
+              if t = translations[I18n.locale].try(:[],:errors).try(:[],field).try(:[],kind)
+                validates field, {kind => ops.try(:merge, {message: t})}
+              else
+                validates field, {kind => ops}
+              end
             }
             # self.class.dynamic_validators << hex
             # end

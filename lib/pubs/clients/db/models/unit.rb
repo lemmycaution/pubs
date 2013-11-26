@@ -31,7 +31,8 @@ class Unit < ActiveRecord::Base
     errors.add(:key, :read_only) if self.key_was != self.key
   end
 
-    def public_json(options = {})
+  def public_json(options = {})
+    return as_json(options) unless has_model?
     json = self.as_json(options)
     public_properties = model.settings[:public_properties]
     json.tap{|a| a["data"].keep_if{ |k,v| public_properties.include?(k)} }
