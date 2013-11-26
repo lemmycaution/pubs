@@ -7,7 +7,7 @@ module Concerns
 
     class VeracityValidator < ActiveModel::Validator
       def validate(record)
-        t = self.model.translations[I18n.locale].try(:[],:errors).try(:[],:email).try(:[],:veracity) || :invalid
+        t = record.model.translations[I18n.locale].try(:[],:errors).try(:[],:email).try(:[],:veracity) || :invalid
         record.errors.add(:email, t) unless EmailVeracity::Address.new(record.email).valid?
       end
     end
