@@ -57,11 +57,11 @@ module Concerns
     end
 
     def increment_data_field field, amount = 1
-      self.update_attribute(data: self.data.tap{|d| d[field] = d[field].to_i + amount})
+      self.update_attribute(:data, self.data.tap{|d| d[field] = d[field].to_i + amount})
     end
 
     def decrement_data_field field, amount = 1
-      self.update_attribute(data: self.data.tap{|d| d[field] = d[field].to_i - amount})
+      self.update_attribute(:data, self.data.tap{|d| d[field] = d[field].to_i - amount})
     end
 
     private
