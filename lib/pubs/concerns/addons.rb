@@ -57,7 +57,7 @@ module Pubs
       def price
         return (BASE_PRICE + (dynos * BASE_DYNO_PRICE)) / 100 if Pubs.mock?
         addons_price = addons.map{ |name,addon|
-            addon.try(:[],"price").try(:[],"cents").to_i || 0
+            addon.try(:[],"price").try(:[],"cents").to_i || addon.try(:[],"price").match(/\$(.+)\/mo/)[1].to_i || 0
           }.inject{ |total, price| total + price }
         (BASE_PRICE.to_i + addons_price.to_i + (dynos.to_i * BASE_DYNO_PRICE.to_i) ) / 100
       end
