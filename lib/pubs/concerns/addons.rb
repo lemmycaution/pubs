@@ -59,7 +59,7 @@ module Pubs
         addons_price = addons.map{ |name,addon|
             addon.try(:[],"price").try(:[],"cents").to_i || 0
           }.inject{ |total, price| total + price }
-        (BASE_PRICE + addons_price + (dynos * BASE_DYNO_PRICE) ) / 100
+        (BASE_PRICE.to_i + addons_price.to_i + (dynos.to_i * BASE_DYNO_PRICE.to_i) ) / 100
       end
 
       private
