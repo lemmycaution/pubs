@@ -39,11 +39,13 @@ module Pubs
         end
 
         env.logger.info("WS OPEN #{env['HTTP_SEC_WEBSOCKET_KEY']}")
+        _current_user = current_user
         env['subscription'] = channel.subscribe { |m|
 
-          force_session!(env)
           unless current_user
-            env.logger.warn "NO USER FOUND !!!"
+            current_user = _current_user if _current_user
+            force_session!(env) unless current_user
+            env.logger.warn "NO USER FOUND !!!" unless current_user
           end
 
           env.stream_send(m)
@@ -52,10 +54,12 @@ module Pubs
 
       def on_message(env, msg)
         @env = env
-        force_session!(env)
+
         unless current_user
-          env.logger.warn "NO USER FOUND !!!"
+          force_session!(env)
+          env.logger.warn "NO USER FOUND !!!" unless current_user
         end
+
         env.logger.info("WS MESSAGE #{env['HTTP_SEC_WEBSOCKET_KEY']}")
         push! msg
       end
