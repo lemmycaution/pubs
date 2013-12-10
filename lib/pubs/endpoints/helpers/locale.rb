@@ -4,19 +4,19 @@ require "ip_country"
 module Pubs
   module Endpoints
     module Helpers
-      module Locale   
-        
+      module Locale
+
         LNG_EXP_PATH = /^\/[a-z]{2}\-[A-Z]{2}\/|^\/[a-z]{2}\-[A-Z]{2}$|^\/[a-z]{2}\/|^\/[a-z]{2}$/
         LNG_EXP_HTTP = /[a-z]{2}\-[A-Z]{2}|[a-z]{2}/
-        
+
         private
-        
+
         # Hash to collect all language related info
         def language_info
-          { current: I18n.locale, path: path_locale, 
+          { current: I18n.locale, path: path_locale,
             browser: browser_locale, country: country_locales }
         end
-  
+
         # ======================
         # Language Detection
         # ======================
@@ -25,38 +25,46 @@ module Pubs
         def set_locale
           I18n.locale = locale
         end
-  
+
         # Set locale by precedence path, browser, country, default
         def locale
           return path_locale      unless path_locale.nil?
-          return browser_locale   if I18n.available_locales.include? browser_locale
+
           country_locales.each do |country_locale|
             return country_locale if I18n.available_locales.include? country_locale
           end
+
+          country_locales.each do |country_locale|
+            country_locale = country_locale.split("-").first
+            return country_locale if I18n.available_locales.include? country_locale
+          end
+
+          return browser_locale   if I18n.available_locales.include? browser_locale
+
           I18n.default_locale
         end
-  
+
         # Extract locale from request path
         def path_locale
           if path_locale = env['REQUEST_PATH'].scan(LNG_EXP_PATH).first
             path_locale.gsub("/","").to_sym
           end
         end
-  
-        # Extract locale from accept language header      
+
+        # Extract locale from accept language header
         def browser_locale
           env['HTTP_ACCEPT_LANGUAGE'].scan(LNG_EXP_HTTP).first.to_sym unless env['HTTP_ACCEPT_LANGUAGE'].nil?
-        end  
-  
+        end
+
         # Get all spoken languages in a country sorted by speakers count
         def country_locales
           country_info ? country_info[:languages].split(",") : []
-        end 
-  
+        end
+
         # ======================
         # Ip to Country
         # ======================
-  
+
         # Detailed country info
         def country_info
           begin
@@ -65,7 +73,7 @@ module Pubs
             nil
           end
         end
-  
+
         # Client's IP4 Address
         # Stolen from Rack::Request
         def remote_ip
@@ -75,7 +83,7 @@ module Pubs
             env['REMOTE_ADDR']
           end
         end
-        
+
       end
     end
   end

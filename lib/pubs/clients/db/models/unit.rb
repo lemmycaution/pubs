@@ -6,7 +6,7 @@ require 'pg_search'
 
 class Unit < ActiveRecord::Base
 
-  CLEAR = "CLEAR"
+
 
   include Concerns::DynamicAttributes
   include Concerns::Validations
@@ -19,18 +19,18 @@ class Unit < ActiveRecord::Base
   before_save             :clear_stubs, if: "has_model?"
   before_save             :ensure_key_not_changed
 
-  attr_accessor :clean_stubs
+
 
   def has_model?
     self.model.present?
   end
 
   def clear_stubs
-    unless clean_stubs == CLEAR
+
       data.each do |k,v|
         data.delete(k) if model.stubs.include? k.to_sym
       end
-    end
+
   end
 
   def ensure_key_not_changed
